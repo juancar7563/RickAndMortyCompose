@@ -47,7 +47,7 @@ class SearchViewModel @Inject constructor(
             viewModelScope.launch {
                 fEventFlow.emit(
                     UIEvent.ShowSnackbar(
-                        UiText.StringResource(R.string.character_error, 2)
+                        UiText.StringResource(R.string.character_error, 3)
                     )
                 )
             }
@@ -77,7 +77,7 @@ class SearchViewModel @Inject constructor(
 
                             fEventFlow.emit(
                                 UIEvent.ShowSnackbar(
-                                    UiText.StringResource(R.string.character_error, 2)
+                                    UiText.StringResource(R.string.character_error, 3)
                                 )
                             )
                         }
@@ -100,7 +100,7 @@ class SearchViewModel @Inject constructor(
             viewModelScope.launch {
                 fEventFlow.emit(
                     UIEvent.ShowSnackbar(
-                        UiText.StringResource(R.string.character_error, 2)
+                        UiText.StringResource(R.string.character_error, 3)
                     )
                 )
             }
