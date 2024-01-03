@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">RickAndMortyMVVM</string>
+
+    <!--  HomeScreen  -->
+    <string name="home_title">Characters</string>
+    <string name="previous_button">Previous</string>
+    <string name="next_button">Next</string>
+
+    <!-- DetailScreen   -->
+    <string name="first_location">First seen in:</string>
+    <string name="last_location">Last known location:</string>
+    <string name="specie">Specie:</string>
+    <string name="status">Status:</string>
+    <string name="gender">Gender:</string>
+    <string name="name">Nombre</string>
+    <string name="character_error">The name needs to consist of at least %d characters</string>
+</resources>
