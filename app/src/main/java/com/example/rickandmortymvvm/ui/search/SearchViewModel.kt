@@ -35,6 +35,7 @@ class SearchViewModel @Inject constructor(
 
     private var currentPage = 1
     private var maxPage = -1
+    private val regexPattern = "^[a-zA-Z0-9-]*$".toRegex()
 
     fun onEvent(event: SearchEvent) {
         when (event) {
@@ -48,6 +49,14 @@ class SearchViewModel @Inject constructor(
                 fEventFlow.emit(
                     UIEvent.ShowSnackbar(
                         UiText.StringResource(R.string.character_error, 3)
+                    )
+                )
+            }
+        } else if (!name.matches(regexPattern)) {
+            viewModelScope.launch {
+                fEventFlow.emit(
+                    UIEvent.ShowSnackbar(
+                        UiText.StringResource(R.string.character_invalid)
                     )
                 )
             }
@@ -101,6 +110,14 @@ class SearchViewModel @Inject constructor(
                 fEventFlow.emit(
                     UIEvent.ShowSnackbar(
                         UiText.StringResource(R.string.character_error, 3)
+                    )
+                )
+            }
+        } else if (!name.matches(regexPattern)) {
+            viewModelScope.launch {
+                fEventFlow.emit(
+                    UIEvent.ShowSnackbar(
+                        UiText.StringResource(R.string.character_invalid)
                     )
                 )
             }

@@ -2,8 +2,11 @@ package com.example.rickandmortymvvm.ui
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.example.rickandmortymvvm.domain.model.Characters
 
 sealed class Screen(val route: String){
+
+    object Splash: Screen("splash")
     object Home: Screen("home")
     object Detail: Screen("detail/{id}?previousScreen={previousScreen}") {
         fun passId(id:Int, screen:String): String {

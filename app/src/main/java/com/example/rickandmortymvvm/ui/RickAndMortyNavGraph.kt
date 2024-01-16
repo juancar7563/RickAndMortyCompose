@@ -9,25 +9,30 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.rickandmortymvvm.domain.model.Characters
 import com.example.rickandmortymvvm.ui.detail.DetailScreen
 import com.example.rickandmortymvvm.ui.home.HomeScreen
 import com.example.rickandmortymvvm.ui.search.SearchScreen
+import com.example.rickandmortymvvm.ui.splash.SplashScreen
 
 @Composable
-fun RickAndMortyNavGraph (
+fun RickAndMortyNavGraph(
     modifier: Modifier = Modifier,
     navigateToHome: () -> Unit,
     navigateToSearch: () -> Unit,
     navigateToDetail: (Int, String) -> Unit,
     context: Context,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = Screen.Home.route
+    startDestination: String = Screen.Splash.route
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier,
     ) {
+        composable(route = Screen.Splash.route) {
+            SplashScreen(navController)
+        }
         composable(route = Screen.Home.route) {
             HomeScreen(
                 onItemClicked = { id, name ->
@@ -49,7 +54,7 @@ fun RickAndMortyNavGraph (
             route = Screen.Detail.route,
             arguments = listOf(
                 navArgument("id") { type = NavType.IntType },
-                navArgument("previousScreen") { type = NavType.StringType  }
+                navArgument("previousScreen") { type = NavType.StringType }
             )
         ) {
             DetailScreen(

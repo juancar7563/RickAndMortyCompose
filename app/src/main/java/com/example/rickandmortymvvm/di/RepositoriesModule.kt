@@ -1,6 +1,7 @@
 package com.example.rickandmortymvvm.di
 
 import com.example.rickandmortymvvm.data.repositories.CharacterRepositoryImpl
+import com.example.rickandmortymvvm.data.repositories.CommonRepository
 import com.example.rickandmortymvvm.domain.repositories.CharacterRepository
 import dagger.Binds
 import dagger.Module

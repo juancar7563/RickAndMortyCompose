@@ -8,4 +8,5 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="green_morty">#5FC557</color>
+    <color name="black_ligh_splash">#191919</color>
 </resources>
