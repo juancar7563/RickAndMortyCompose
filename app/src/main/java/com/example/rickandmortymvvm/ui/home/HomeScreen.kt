@@ -1,9 +1,13 @@
 package com.example.rickandmortymvvm.ui.home
 
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -11,11 +15,20 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
+import androidx.compose.ui.graphics.Color.Companion.White
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -26,6 +39,7 @@ import com.example.rickandmortymvvm.domain.model.Characters
 import com.example.rickandmortymvvm.ui.Screen
 import com.example.rickandmortymvvm.ui.home.components.CharacterItem
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -55,17 +69,7 @@ fun HomeScreen(
             HomeTopBar(
                 onSearchPressed = { onSearchClicked() }
             )
-        }/*,
-        bottomBar = {
-            HomeBottomBar(
-                showPrevious = state.showPrevious,
-                showNext = state.showNext,
-                onPreviousPressed = {
-                    viewModel.getCharacters(false)
-                },
-                onNextPressed = { viewModel.getCharacters(true)}
-            )
-        }*/
+        }
     ) { innerPadding ->
         HomeContent(
             modifier = Modifier.padding(innerPadding),
@@ -146,11 +150,13 @@ fun HomeContent(
     viewModel: HomeViewModel
 ) {
     val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
 
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colors.surface
     ) {
+
         LazyColumn(
             state = lazyListState,
             contentPadding = PaddingValues(vertical = 6.dp),
@@ -170,6 +176,15 @@ fun HomeContent(
             },
             userScrollEnabled = !isLoading
         )
+
+        AnimatedVisibility(visible = lazyListState.isScrollingUp(), enter = fadeIn(), exit = fadeOut()) {
+            GoToTop {
+                coroutineScope.launch {
+                    lazyListState.scrollToItem(0)
+                }
+            }
+        }
+
         if (isLoading) {
             FullScreenLoading()
         }
@@ -243,4 +258,42 @@ private fun FullScreenLoading() {
     {
         CircularProgressIndicator()
     }
+}
+
+@Composable
+fun GoToTop(goToTop: () -> Unit) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        FloatingActionButton(
+            modifier = Modifier
+                .padding(16.dp)
+                .size(40.dp)
+                .align(Alignment.TopCenter),
+            onClick = goToTop,
+            backgroundColor = White, contentColor = Black
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_arrow_black_up_foreground),
+                contentDescription = "go to top"
+            )
+        }
+    }
+}
+
+//Sacar esta función a otra clase para tenerlo ordenado y que tenga mas sentido si se quiere usar en otros LazyListState
+@Composable
+fun LazyListState.isScrollingUp(): Boolean {
+    var previousIndex by remember(this) { mutableStateOf(firstVisibleItemIndex) }
+    var previousScrollOffset by remember(this) { mutableStateOf(firstVisibleItemScrollOffset) }
+    return remember(this) {
+        derivedStateOf {
+            if (previousIndex != firstVisibleItemIndex) {
+                previousIndex > firstVisibleItemIndex
+            } else {
+                previousScrollOffset >= firstVisibleItemScrollOffset
+            }.also {
+                previousIndex = firstVisibleItemIndex
+                previousScrollOffset = firstVisibleItemScrollOffset
+            }
+        }
+    }.value
 }

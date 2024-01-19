@@ -26,6 +26,7 @@ fun CharacterItem (
 ){
     Row(
         modifier = modifier
+            .height(90.dp)
             .clickable { onItemClicked(item.id, screen)}
             .padding(start = 6.dp, top = 12.dp, bottom = 12.dp)
     ) {
