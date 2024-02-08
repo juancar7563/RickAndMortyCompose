@@ -151,7 +151,7 @@ fun HomeContent(
 ) {
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
-
+    val isFirstElementVisible = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull()?.index == 0
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colors.surface
@@ -177,7 +177,7 @@ fun HomeContent(
             userScrollEnabled = !isLoading
         )
 
-        AnimatedVisibility(visible = lazyListState.isScrollingUp(), enter = fadeIn(), exit = fadeOut()) {
+        AnimatedVisibility(visible = (lazyListState.isScrollingUp() && !isFirstElementVisible), enter = fadeIn(), exit = fadeOut()) {
             GoToTop {
                 coroutineScope.launch {
                     lazyListState.scrollToItem(0)
@@ -189,6 +189,7 @@ fun HomeContent(
             FullScreenLoading()
         }
     }
+
 
     val isScrollAtEnd = lazyListState.isScrollInProgress &&
             lazyListState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == lazyListState.layoutInfo.totalItemsCount - 1

@@ -36,18 +36,7 @@ class HomeViewModel @Inject constructor(
     private var maxCurrentPage = 0
 
     init {
-        if (!commonRepository.getCharacters().value?.isEmpty()!!){
-            listAlCharacters.addAll(commonRepository.getCharacters().value!!)
-            currentPage = 2;
-            state = state.copy(
-                characters = listAlCharacters,
-                isLoading = false,
-                showPrevious = false,
-                showNext = false
-            )
-        } else {
-            getCharacters(increase = false)
-        }
+        getCharactersFromSplash()
     }
 
     fun getCharacters(increase: Boolean) {
@@ -58,40 +47,68 @@ class HomeViewModel @Inject constructor(
                 getCharactersUseCase(currentPage).onEach { result ->
                     when (result) {
                         is Result.Success -> {
-                            val showNext = currentPage < result.data?.info?.pages!!
-                            if (maxCurrentPage == 0) maxCurrentPage = result.data?.info?.pages!!
-                            result.data?.characters?.toMutableList()
-                                ?.let { listAlCharacters.addAll(it) }
+                            updateCurrentPage(currentPage < result.data?.info?.pages!!)
+                            if (maxCurrentPage == 0) updatePage(result.data?.info?.pages!!)
                             delay(2000)
-                            state = state.copy(
-                                characters = listAlCharacters,
-                                isLoading = false,
-                                showPrevious = showPrevious,
-                                showNext = showNext
+                            updateState(
+                                result.data?.characters?.toMutableList(),
+                                false,
+                                showPrevious,
+                                false
                             )
                         }
 
                         is Result.Error -> {
-                            state = state.copy(
-                                isLoading = false
-                            )
-
-                            fEventFlow.emit(
-                                UIEvent.ShowSnackbar(
-                                    result.message ?: "Unknown error"
-                                )
-                            )
+                            handleError(false)
+                            showSnackbarMethod(result.message ?: "Unknown error")
                         }
 
                         is Result.Loading -> {
-                            state = state.copy(
-                                isLoading = true
-                            )
+                            handleError(true)
                         }
                     }
                 }.launchIn(this)
             }
         }
+    }
+
+    fun getCharactersFromSplash() {
+        if (!commonRepository.getCharacters().value?.isEmpty()!!) {
+            listAlCharacters.addAll(commonRepository.getCharacters().value!!)
+            currentPage = 2;
+            updateState(listAlCharacters, false, false, false)
+        } else {
+            getCharacters(increase = false)
+        }
+    }
+
+    fun updateState(characters: MutableList<Characters>?, isLoading: Boolean, showPrevious: Boolean, showNext: Boolean) {
+        if (characters != null) {
+            listAlCharacters.addAll(characters)
+        }
+        state = state.copy(
+            characters = listAlCharacters,
+            isLoading = isLoading,
+            showPrevious = showPrevious,
+            showNext = showNext
+        )
+    }
+
+    fun handleError(isError: Boolean) {
+        state = state.copy(isLoading = isError)
+    }
+
+    suspend fun showSnackbarMethod(message: String) {
+        fEventFlow.emit(UIEvent.ShowSnackbar(message))
+    }
+
+    fun updatePage(maxPages: Int): Boolean {
+        maxCurrentPage = maxPages
+        return currentPage < maxPages
+    }
+
+    fun updateCurrentPage(showNext: Boolean) {
+        if (showNext) currentPage++ else if (currentPage > 1) currentPage--
     }
 
     sealed class UIEvent {

@@ -44,58 +44,27 @@ class SearchViewModel @Inject constructor(
     }
 
     fun getSearchCharacters(name: String) {
-        if (name.length <= 2) {
+        if (!isValidName(name)) {
             viewModelScope.launch {
-                fEventFlow.emit(
-                    UIEvent.ShowSnackbar(
-                        UiText.StringResource(R.string.character_error, 3)
-                    )
-                )
-            }
-        } else if (!name.matches(regexPattern)) {
-            viewModelScope.launch {
-                fEventFlow.emit(
-                    UIEvent.ShowSnackbar(
-                        UiText.StringResource(R.string.character_invalid)
-                    )
-                )
+                showSnackbarMethod(UiText.StringResource(R.string.character_error, 3))
             }
         } else {
             viewModelScope.launch {
                 getCharacterSearchUseCase(name).onEach { result ->
                     when (result) {
                         is Result.Success -> {
-                            maxPage = result.data?.info?.pages!!
-                            val showNext = currentPage < result.data?.info?.pages!!
-                            if (showNext) currentPage++ else if (currentPage > 1) currentPage--
-                            listAlCharacters.clear()
-                            result.data.characters.toMutableList()
-                                .let { listAlCharacters.addAll(it) }
-
-                            state = state.copy(
-                                characters = listAlCharacters,
-                                isLoading = false,
-                                nameInput = name
-                            )
+                            updatePage(result.data?.info?.pages!!)
+                            updateCurrentPage(currentPage < result.data?.info?.pages!!)
+                            updateState(result.data.characters.toMutableList(), false, name, true)
                         }
 
                         is Result.Error -> {
-                            state = state.copy(
-                                isLoading = false
-                            )
-
-                            fEventFlow.emit(
-                                UIEvent.ShowSnackbar(
-                                    UiText.StringResource(R.string.character_error, 3)
-                                )
-                            )
+                            handleError(true)
+                            showSnackbarMethod(UiText.StringResource(R.string.character_error, 3))
                         }
 
                         is Result.Loading -> {
-                            var prueba = 0
-                            state = state.copy(
-                                isLoading = true
-                            )
+                            handleError(false)
                         }
                     }
                 }.launchIn(this)
@@ -105,60 +74,66 @@ class SearchViewModel @Inject constructor(
     }
 
     fun getMoreSearchCharacters(name: String) {
-        if (name.length <= 2) {
+        if (!isValidName(name)) {
             viewModelScope.launch {
-                fEventFlow.emit(
-                    UIEvent.ShowSnackbar(
-                        UiText.StringResource(R.string.character_error, 3)
-                    )
-                )
-            }
-        } else if (!name.matches(regexPattern)) {
-            viewModelScope.launch {
-                fEventFlow.emit(
-                    UIEvent.ShowSnackbar(
-                        UiText.StringResource(R.string.character_invalid)
-                    )
-                )
+                showSnackbarMethod(UiText.StringResource(R.string.character_error, 3))
             }
         } else if (maxPage != -1 && currentPage < maxPage) {
             viewModelScope.launch {
                 getCharactersMoreSearchCase(currentPage, name).onEach { result ->
                     when (result) {
                         is Result.Success -> {
-                            maxPage = result.data?.info?.pages!!
-                            val showNext = currentPage < result.data?.info?.pages!!
-                            if (showNext) currentPage++ else if (currentPage > 1) currentPage--
-                            result.data.characters.toMutableList()
-                                .let { listAlCharacters.addAll(it) }
-                            state = state.copy(
-                                characters = listAlCharacters,
-                                isLoading = false,
-                                nameInput = name
-                            )
+                            updatePage(result.data?.info?.pages!!)
+                            updateCurrentPage(currentPage < result.data?.info?.pages!!)
+                            updateState(result.data.characters.toMutableList(), false, name, false)
                         }
 
                         is Result.Error -> {
-                            state = state.copy(
-                                isLoading = false
-                            )
-
-                            fEventFlow.emit(
-                                UIEvent.ShowSnackbar(
-                                    UiText.StringResource(R.string.character_error, 3)
-                                )
-                            )
+                            handleError(true)
+                            showSnackbarMethod(UiText.StringResource(R.string.character_error, 3))
                         }
 
                         is Result.Loading -> {
-                            state = state.copy(
-                                isLoading = true
-                            )
+                            handleError(false)
                         }
                     }
                 }.launchIn(this)
             }
         }
+    }
+
+    fun updateState(characters: MutableList<Characters>, isLoading: Boolean, name: String, isFirstTime: Boolean) {
+        if (isFirstTime) {
+            listAlCharacters.clear()
+        }
+        listAlCharacters.addAll(characters)
+
+        state = state.copy(
+            characters = listAlCharacters,
+            isLoading = isLoading,
+            nameInput = name
+        )
+    }
+
+    fun handleError(isError: Boolean) {
+        state = state.copy(isLoading = isError)
+    }
+
+    suspend fun showSnackbarMethod(message: UiText.StringResource) {
+        fEventFlow.emit(UIEvent.ShowSnackbar(message))
+    }
+
+    fun isValidName(name: String): Boolean {
+        return name.length > 2 && name.matches(regexPattern)
+    }
+
+    fun updatePage(maxPages: Int): Boolean {
+        maxPage = maxPages
+        return currentPage < maxPages
+    }
+
+    fun updateCurrentPage(showNext: Boolean) {
+        if (showNext) currentPage++ else if (currentPage > 1) currentPage--
     }
 
     sealed class UIEvent {

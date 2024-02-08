@@ -11,6 +11,8 @@ import com.example.rickandmortymvvm.domain.model.Characters
 import com.example.rickandmortymvvm.domain.use_case.GetCharactersUseCase
 import com.example.rickandmortymvvm.ui.home.HomeState
 import com.example.rickandmortymvvm.ui.home.HomeViewModel
+import com.example.rickandmortymvvm.ui.search.SearchViewModel
+import com.example.rickandmortymvvm.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -30,9 +32,7 @@ class SplashViewModel @Inject constructor(
         private set
 
     private val fEventFlow = MutableSharedFlow<UIEvent>()
-
     private val listAlCharacters: MutableList<Characters> = mutableListOf()
-
     private var currentPage = 1
 
     init {
@@ -46,38 +46,40 @@ class SplashViewModel @Inject constructor(
                 when (result) {
                     is Result.Success -> {
                         commonRepository.setCharacters(result.data?.characters?.toMutableList())
-                        result.data?.characters?.toMutableList()
-                            ?.let { listAlCharacters.addAll(it) }
-
-                        commonRepository.setCharacters(listAlCharacters)
-
-                        state = state.copy(
-                            characters = listAlCharacters,
-                            isLoading = false,
-                        )
+                        updateState(result.data?.characters?.toMutableList(), false)
                     }
 
                     is Result.Error -> {
-                        state = state.copy(
-                            isLoading = false
-                        )
-
-                        fEventFlow.emit(
-                            UIEvent.ShowSnackbar(
-                                result.message ?: "Unknown error"
-                            )
-                        )
+                        handleError(false)
+                        showSnackbarMethod(result.message ?: "Unknown error")
                     }
 
                     is Result.Loading -> {
-                        state = state.copy(
-                            isLoading = true
-                        )
+                        handleError(true)
                     }
                 }
             }.launchIn(this)
 
         }
+    }
+
+    fun updateState(characters: MutableList<Characters>?, isLoading: Boolean) {
+        if (characters != null) {
+            listAlCharacters.addAll(characters)
+        }
+
+        state = state.copy(
+            characters = listAlCharacters,
+            isLoading = isLoading
+        )
+    }
+
+    fun handleError(isError: Boolean) {
+        state = state.copy(isLoading = isError)
+    }
+
+    suspend fun showSnackbarMethod(message: String) {
+        fEventFlow.emit(UIEvent.ShowSnackbar(message))
     }
 
     sealed class UIEvent {

@@ -11,8 +11,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.rickandmortymvvm.data.Result
-import com.example.rickandmortymvvm.ui.home.HomeViewModel
-import kotlinx.coroutines.delay
+import com.example.rickandmortymvvm.domain.model.Character
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -25,7 +24,7 @@ class DetailViewModel @Inject constructor(
 
     var state by mutableStateOf(DetailState(isLoading = true))
         private set
-    private val fEventFlow = MutableSharedFlow<HomeViewModel.UIEvent>()
+    private val fEventFlow = MutableSharedFlow<UIEvent>()
 
     init {
         getCharacter()
@@ -37,24 +36,38 @@ class DetailViewModel @Inject constructor(
                 getCharacterUseCase(characterId).onEach { result ->
                     when (result) {
                         is Result.Success -> {
-                            state = state.copy(
-                                character = result.data,
-                                isLoading = false
-                            )
+                            updateState(result.data ,false)
                         }
                         is Result.Error -> {
-                            state = state.copy(
-                                isLoading = false
-                            )
+                            handleError(false)
+                            showSnackbarMethod(result.message ?: "Unknown error")
+
                         }
                         is Result.Loading -> {
-                            state = state.copy(
-                                isLoading = true
-                            )
+                            handleError(true)
                         }
                     }
                 }.launchIn(this)
             }
         }
+    }
+
+    fun updateState(character: Character?, isLoading: Boolean) {
+        state = state.copy(
+            character = character,
+            isLoading = isLoading,
+        )
+    }
+
+    fun handleError(isError: Boolean) {
+        state = state.copy(isLoading = isError)
+    }
+
+    suspend fun showSnackbarMethod(message: String) {
+        fEventFlow.emit(UIEvent.ShowSnackbar(message))
+    }
+
+    sealed class UIEvent {
+        data class ShowSnackbar(val message: String) : UIEvent()
     }
 }
