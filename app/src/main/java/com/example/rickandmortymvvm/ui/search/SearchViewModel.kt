@@ -12,6 +12,7 @@ import com.example.rickandmortymvvm.domain.use_case.GetCharacterSearchUseCase
 import com.example.rickandmortymvvm.domain.use_case.GetCharactersMoreSearchCase
 import com.example.rickandmortymvvm.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
@@ -26,15 +27,15 @@ class SearchViewModel @Inject constructor(
 ) : ViewModel() {
 
     var state by mutableStateOf(SearchState(isLoading = false))
-        private set
+        set
 
-    private val fEventFlow = MutableSharedFlow<UIEvent>()
+    var fEventFlow = MutableSharedFlow<UIEvent>()
     val eventFlow = fEventFlow.asSharedFlow()
 
-    private val listAlCharacters: MutableList<Characters> = mutableListOf()
+    val listAlCharacters: MutableList<Characters> = mutableListOf()
 
-    private var currentPage = 1
-    private var maxPage = -1
+    var currentPage = 1
+    var maxPage = -1
     private val regexPattern = "^[a-zA-Z0-9-]*$".toRegex()
 
     fun onEvent(event: SearchEvent) {
@@ -119,10 +120,6 @@ class SearchViewModel @Inject constructor(
         state = state.copy(isLoading = isError)
     }
 
-    suspend fun showSnackbarMethod(message: UiText.StringResource) {
-        fEventFlow.emit(UIEvent.ShowSnackbar(message))
-    }
-
     fun isValidName(name: String): Boolean {
         return name.length > 2 && name.matches(regexPattern)
     }
@@ -134,6 +131,10 @@ class SearchViewModel @Inject constructor(
 
     fun updateCurrentPage(showNext: Boolean) {
         if (showNext) currentPage++ else if (currentPage > 1) currentPage--
+    }
+
+    suspend fun showSnackbarMethod(message: UiText.StringResource) {
+        fEventFlow.emit(UIEvent.ShowSnackbar(message))
     }
 
     sealed class UIEvent {
