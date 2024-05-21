@@ -1,0 +1,32 @@
+- Buscar correciones y hacer un listado
+- Añadir una flecha de back en la busqueda
+- Cambiar el diseño de la app
+- Añadir un boton de reintentar si no cargan los personajes
+- Mejorar el codigo
+- Hacer un control de excepciones para las llamadas
+- Añadir la funcion de busqueda al confirmar el teclado
+- Añadir un feedback de sobre que letra vas en el scroll
+- Añadir un skeleton al diseño
+- Boton para subir arriba en el scroll (Hecho)
+- Arreglar fallo en celdas al cargar la siguiente pagina (Hecho)
+- Añadir un splash para la carga de servicios(Hecho)
+- subir el proyecto a github para tener un repo y versiones (Hecho)
+- Controlar no poder meter caracteres raros en la busqueda (Hecho)
+- Mejorar la forma de avisar al usuario de que no hay suficientes letras para buscar(Hecho)
+- Deshabilitar pantalla mientras carga para que no se mueva el scroll hasta que termina (Hecho)
+- Poner una pantalla de carga en el detalle hasta que termine de cargar (Hecho)
+- Controlar maximo de paginación en detalle y listado normal (Hecho)
+- Añadir testeo en la app
+	* Test en  busqueda si el texto es muy corto
+	* Test en busqueda si el texto es muy largo
+	* Test en busqueda si el texto contiene caracteres raros
+	* Test en busqueda si el texto es correcto
+	* Test para busqueda de personaje con mock error y exito
+	* Test de paginacion con mock error y exito
+	* Test para detalle de personaje error y exito
+	* Test navegación a busqueda
+	* Test navegación a detalle personaje
+	* Test navegación de splash a home
+	* Test navegación back de detalle
+
+Unit Tests, UI Tests, End-to-End Tests

@@ -1,6 +1,8 @@
 package com.example.rickandmortymvvm.ui.search
 
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.SavedStateHandle
 import com.example.rickandmortymvvm.domain.model.Characters
 import com.example.rickandmortymvvm.domain.use_case.GetCharacterSearchUseCase
 import com.example.rickandmortymvvm.domain.use_case.GetCharactersMoreSearchCase
@@ -17,26 +19,101 @@ import kotlinx.coroutines.test.runTest
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
 import com.example.rickandmortymvvm.R
+import com.example.rickandmortymvvm.domain.model.CharactersResultModel
+import com.example.rickandmortymvvm.domain.model.InfoModel
+import com.example.rickandmortymvvm.domain.use_case.CharacterResultList
+import com.example.rickandmortymvvm.ui.MainCoroutineRule
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestCoroutineDispatcher
 import kotlinx.coroutines.test.runBlockingTest
+import org.junit.Rule
+import org.junit.rules.TestRule
 
+@ExperimentalCoroutinesApi
 class SearchViewModelTest {
 
+    @ExperimentalCoroutinesApi
+    @get:Rule
+    val mainDispatcherRule = MainCoroutineRule()
+
+    @get:Rule
+    val rule: TestRule = InstantTaskExecutorRule()
+
     @Mock
-    lateinit var fEventFlow: Flow<SearchViewModel.UIEvent>
     private lateinit var getCharacterSearchUseCase: GetCharacterSearchUseCase
     private lateinit var getCharactersMoreSearchCase: GetCharactersMoreSearchCase
+    private lateinit var savedStateHandle: SavedStateHandle
+
+
     @Before
     fun setup() {
         getCharacterSearchUseCase = mockk()
         getCharactersMoreSearchCase = mockk()
-        MockitoAnnotations.initMocks(this)
+        savedStateHandle = mockk()
     }
 
     @Test
-    fun `updateState should update state correctly and first time`() {
+    fun `getMoreSearchCharacters - invalid name`() = runTest {
+
+        val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
+
+        val invalidName = "123"
+        every { savedStateHandle.get<Int>("maxPage") } returns 10
+        every { savedStateHandle.get<Int>("currentPage") } returns 5
+
+        viewModel.getMoreSearchCharacters(invalidName)
+
+        viewModel.showSnackbarMethod(UiText.StringResource(R.string.character_error, 3))
+    }
+
+    @Test
+    fun `getMoreSearchCharacters - valid name and maxPage reached`() = runTest {
+
+        val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
+
+        val validName = "Valid Name"
+        val maxPage = 5
+        every { savedStateHandle.get<Int>("maxPage") } returns maxPage
+        every { savedStateHandle.get<Int>("currentPage") } returns maxPage
+
+        viewModel.getMoreSearchCharacters(validName)
+
+
+        verify(exactly = 0) { getCharactersMoreSearchCase(any(), any()) }
+    }
+
+    @Test
+    fun `getMoreSearchCharacters - valid name and not maxPage reached`() = runTest {
+
+        val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
+
+        val validName = "Pepe"
+        val maxPage = 10
+        val currentPage = 5
+
+        val infoModel = InfoModel(4, "false", 4, "false")
+        val characters = mutableListOf(
+            Characters(1, "Pepe", "Vallecano", "qweqwewq"),
+            Characters(2, "Juja", "Coloso", "popopop")
+        )
+        viewModel.maxPage = maxPage
+        viewModel.currentPage = currentPage
+
+        val charactersResultModel = CharactersResultModel(infoModel, characters)
+        val flow = flowOf(CharacterResultList.Success(charactersResultModel))
+        coEvery { getCharactersMoreSearchCase(currentPage, validName) } returns flow
+
+        viewModel.getMoreSearchCharacters(validName)
+
+        coVerify { getCharactersMoreSearchCase(currentPage, validName) }
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun `updateState should update state correctly and first time`() = runTest {
         // Arrange
         val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
         val character1 = Characters(1, "Pepe", "Vallecano", "qweqwewq")
@@ -57,8 +134,9 @@ class SearchViewModelTest {
         assertTrue(!viewModel.state.characters.containsAll(charactersPrevious))
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun `updateState should update state correctly but no first time`() {
+    fun `updateState should update state correctly but no first time`() = runTest {
         // Arrange
         val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
         val character1 = Characters(1, "Pepe", "Vallecano", "qweqwewq")
@@ -79,6 +157,7 @@ class SearchViewModelTest {
         assertTrue(viewModel.state.characters.containsAll(charactersPrevious))
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun `handleError should update isLoading correctly when isError is true`() = runTest {
         // Arrange
@@ -91,6 +170,7 @@ class SearchViewModelTest {
         assertTrue(viewModel.state.isLoading)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun `handleError should update isLoading correctly when isError is false`() = runTest {
         // Arrange
@@ -104,8 +184,9 @@ class SearchViewModelTest {
         assertFalse(viewModel.state.isLoading)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun `isValidName should return true for valid names`() {
+    fun `isValidName should return true for valid names`() = runTest {
         // Arrange
         val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
         val validNames = listOf("John", "Doe", "JaneDoe123")
@@ -116,8 +197,9 @@ class SearchViewModelTest {
         }
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun `isValidName should return false for invalid names`() {
+    fun `isValidName should return false for invalid names`() = runTest {
         // Arrange
         val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
         val invalidNames = listOf("", "A", "12")
@@ -128,8 +210,9 @@ class SearchViewModelTest {
         }
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun `updatePage should update maxPage and return true if currentPage is less than maxPages`() {
+    fun `updatePage should update maxPage and return true if currentPage is less than maxPages`() = runTest {
         // Arrange
         val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
         val maxPages = 10
@@ -142,8 +225,9 @@ class SearchViewModelTest {
         assertTrue(result)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun `updatePage should update maxPage and return false if currentPage is greater than or equal to maxPages`() {
+    fun `updatePage should update maxPage and return false if currentPage is greater than or equal to maxPages`() = runTest {
         // Arrange
         val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
         viewModel.currentPage = 10
@@ -157,8 +241,9 @@ class SearchViewModelTest {
         assertFalse(result)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun `updateCurrentPage should increment currentPage if showNext is true`() {
+    fun `updateCurrentPage should increment currentPage if showNext is true`() = runTest {
         // Arrange
         val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
         viewModel.currentPage = 1
@@ -170,8 +255,9 @@ class SearchViewModelTest {
         assertEquals(2, viewModel.currentPage)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun `updateCurrentPage should decrement currentPage if showNext is false and currentPage is greater than 1`() {
+    fun `updateCurrentPage should decrement currentPage if showNext is false and currentPage is greater than 1`() = runTest {
         // Arrange
         val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
         viewModel.currentPage = 3
@@ -183,8 +269,9 @@ class SearchViewModelTest {
         assertEquals(2, viewModel.currentPage)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun `updateCurrentPage should not decrement currentPage if showNext is false and currentPage is 1`() {
+    fun `updateCurrentPage should not decrement currentPage if showNext is false and currentPage is 1`() = runTest {
         // Arrange
         val viewModel = SearchViewModel(getCharacterSearchUseCase, getCharactersMoreSearchCase)
         viewModel.currentPage = 1
@@ -196,6 +283,7 @@ class SearchViewModelTest {
         assertEquals(1, viewModel.currentPage)
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun `showSnackbarMethod should emit UIEvent ShowSnackbar with correct message using mockk`() = runTest {
         // Arrange

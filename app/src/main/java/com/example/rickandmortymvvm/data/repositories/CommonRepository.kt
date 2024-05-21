@@ -6,9 +6,12 @@ import com.example.rickandmortymvvm.domain.model.Characters
 import javax.inject.Inject
 
 class CommonRepository @Inject constructor(){
-    private val charactersList = MutableLiveData<List<Characters>>()
-    fun getCharacters(): LiveData<List<Characters>> = charactersList
+    private var charactersList: MutableList<Characters> = mutableListOf()
+
+    fun getCharacters(): MutableList<Characters> = charactersList
     fun setCharacters(characters: MutableList<Characters>?) {
-        charactersList.value = characters
+        if (characters != null) {
+            charactersList = characters
+        }
     }
 }

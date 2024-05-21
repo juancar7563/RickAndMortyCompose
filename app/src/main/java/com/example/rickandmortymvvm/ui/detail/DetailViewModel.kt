@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 import com.example.rickandmortymvvm.data.Result
 import com.example.rickandmortymvvm.domain.model.Character
+import com.example.rickandmortymvvm.domain.use_case.CharacterResult
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -24,26 +25,25 @@ class DetailViewModel @Inject constructor(
 
     var state by mutableStateOf(DetailState(isLoading = true))
         private set
-    private val fEventFlow = MutableSharedFlow<UIEvent>()
+    var fEventFlow = MutableSharedFlow<UIEvent>()
 
     init {
         getCharacter()
     }
 
-    private fun getCharacter() {
+    fun getCharacter() {
         savedStateHandle.get<Int>("id")?.let { characterId ->
             viewModelScope.launch {
                 getCharacterUseCase(characterId).onEach { result ->
                     when (result) {
-                        is Result.Success -> {
-                            updateState(result.data ,false)
+                        is CharacterResult.Success -> {
+                            updateState(result.character, isLoading = false)
                         }
-                        is Result.Error -> {
+                        is CharacterResult.Error -> {
                             handleError(false)
                             showSnackbarMethod(result.message ?: "Unknown error")
-
                         }
-                        is Result.Loading -> {
+                        is CharacterResult.Loading -> {
                             handleError(true)
                         }
                     }

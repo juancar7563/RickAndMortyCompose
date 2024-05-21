@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.rickandmortymvvm.data.Result
 import com.example.rickandmortymvvm.data.repositories.CommonRepository
 import com.example.rickandmortymvvm.domain.model.Characters
+import com.example.rickandmortymvvm.domain.use_case.CharacterResultList
 import com.example.rickandmortymvvm.domain.use_case.GetCharactersUseCase
 import com.example.rickandmortymvvm.ui.home.HomeState
 import com.example.rickandmortymvvm.ui.home.HomeViewModel
@@ -31,7 +32,7 @@ class SplashViewModel @Inject constructor(
     var state by mutableStateOf(SplashState(isLoading = true))
         private set
 
-    private val fEventFlow = MutableSharedFlow<UIEvent>()
+    var fEventFlow = MutableSharedFlow<UIEvent>()
     private val listAlCharacters: MutableList<Characters> = mutableListOf()
     private var currentPage = 1
 
@@ -41,20 +42,20 @@ class SplashViewModel @Inject constructor(
 
     fun getCharacters() {
         viewModelScope.launch {
-
             getCharactersUseCase(currentPage).onEach { result ->
                 when (result) {
-                    is Result.Success -> {
-                        commonRepository.setCharacters(result.data?.characters?.toMutableList())
-                        updateState(result.data?.characters?.toMutableList(), false)
+                    is CharacterResultList.Success -> {
+                        updateState(result.character?.characters?.toMutableList(), false)
+                        commonRepository.setCharacters(result.character?.characters?.toMutableList())
                     }
 
-                    is Result.Error -> {
+                    is CharacterResultList.Error -> {
                         handleError(false)
+                        updateState(null , false)
                         showSnackbarMethod(result.message ?: "Unknown error")
                     }
 
-                    is Result.Loading -> {
+                    is CharacterResultList.Loading -> {
                         handleError(true)
                     }
                 }

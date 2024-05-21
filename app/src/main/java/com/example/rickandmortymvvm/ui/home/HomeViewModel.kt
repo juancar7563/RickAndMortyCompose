@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.rickandmortymvvm.data.Result
 import com.example.rickandmortymvvm.data.repositories.CommonRepository
 import com.example.rickandmortymvvm.domain.model.Characters
+import com.example.rickandmortymvvm.domain.use_case.CharacterResultList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -25,15 +26,15 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
     var state by mutableStateOf(HomeState(isLoading = true))
-        private set
+        set
 
-    private val fEventFlow = MutableSharedFlow<UIEvent>()
+    var fEventFlow = MutableSharedFlow<UIEvent>()
     val eventFlow = fEventFlow.asSharedFlow()
 
-    private val listAlCharacters: MutableList<Characters> = mutableListOf()
+    val listAlCharacters: MutableList<Characters> = mutableListOf()
 
-    private var currentPage = 1
-    private var maxCurrentPage = 0
+    var currentPage = 1
+    var maxCurrentPage = 0
 
     init {
         getCharactersFromSplash()
@@ -46,24 +47,24 @@ class HomeViewModel @Inject constructor(
                 val showPrevious = currentPage > 1
                 getCharactersUseCase(currentPage).onEach { result ->
                     when (result) {
-                        is Result.Success -> {
-                            updateCurrentPage(currentPage < result.data?.info?.pages!!)
-                            if (maxCurrentPage == 0) updatePage(result.data?.info?.pages!!)
+                        is CharacterResultList.Success -> {
+                            updateCurrentPage(currentPage < result.character?.info?.pages!!)
+                            if (maxCurrentPage == 0) updatePage(result.character?.info?.pages!!)
                             delay(2000)
                             updateState(
-                                result.data?.characters?.toMutableList(),
+                                result.character?.characters?.toMutableList(),
                                 false,
                                 showPrevious,
                                 false
                             )
                         }
 
-                        is Result.Error -> {
+                        is CharacterResultList.Error -> {
                             handleError(false)
                             showSnackbarMethod(result.message ?: "Unknown error")
                         }
 
-                        is Result.Loading -> {
+                        is CharacterResultList.Loading -> {
                             handleError(true)
                         }
                     }
@@ -73,10 +74,11 @@ class HomeViewModel @Inject constructor(
     }
 
     fun getCharactersFromSplash() {
-        if (!commonRepository.getCharacters().value?.isEmpty()!!) {
-            listAlCharacters.addAll(commonRepository.getCharacters().value!!)
-            currentPage = 2;
-            updateState(listAlCharacters, false, false, false)
+        val characters = commonRepository.getCharacters()
+        if (!characters.isNullOrEmpty()) {
+            listAlCharacters.clear()
+            currentPage = 2
+            updateState(characters, false, false, false)
         } else {
             getCharacters(increase = false)
         }

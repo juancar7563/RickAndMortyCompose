@@ -6,13 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rickandmortymvvm.R
-import com.example.rickandmortymvvm.data.Result
 import com.example.rickandmortymvvm.domain.model.Characters
+import com.example.rickandmortymvvm.domain.use_case.CharacterResultList
 import com.example.rickandmortymvvm.domain.use_case.GetCharacterSearchUseCase
 import com.example.rickandmortymvvm.domain.use_case.GetCharactersMoreSearchCase
 import com.example.rickandmortymvvm.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
@@ -53,18 +52,23 @@ class SearchViewModel @Inject constructor(
             viewModelScope.launch {
                 getCharacterSearchUseCase(name).onEach { result ->
                     when (result) {
-                        is Result.Success -> {
-                            updatePage(result.data?.info?.pages!!)
-                            updateCurrentPage(currentPage < result.data?.info?.pages!!)
-                            updateState(result.data.characters.toMutableList(), false, name, true)
+                        is CharacterResultList.Success -> {
+                            updatePage(result.character?.info?.pages!!)
+                            updateCurrentPage(currentPage < result.character?.info?.pages!!)
+                            updateState(
+                                result.character.characters.toMutableList(),
+                                false,
+                                name,
+                                true
+                            )
                         }
 
-                        is Result.Error -> {
+                        is CharacterResultList.Error -> {
                             handleError(true)
                             showSnackbarMethod(UiText.StringResource(R.string.character_error, 3))
                         }
 
-                        is Result.Loading -> {
+                        is CharacterResultList.Loading -> {
                             handleError(false)
                         }
                     }
@@ -83,18 +87,18 @@ class SearchViewModel @Inject constructor(
             viewModelScope.launch {
                 getCharactersMoreSearchCase(currentPage, name).onEach { result ->
                     when (result) {
-                        is Result.Success -> {
-                            updatePage(result.data?.info?.pages!!)
-                            updateCurrentPage(currentPage < result.data?.info?.pages!!)
-                            updateState(result.data.characters.toMutableList(), false, name, false)
+                        is CharacterResultList.Success -> {
+                            updatePage(result.character?.info?.pages!!)
+                            updateCurrentPage(true)
+                            updateState(result.character.characters.toMutableList(), false, name, false)
                         }
 
-                        is Result.Error -> {
+                        is CharacterResultList.Error -> {
                             handleError(true)
                             showSnackbarMethod(UiText.StringResource(R.string.character_error, 3))
                         }
 
-                        is Result.Loading -> {
+                        is CharacterResultList.Loading -> {
                             handleError(false)
                         }
                     }
@@ -103,7 +107,12 @@ class SearchViewModel @Inject constructor(
         }
     }
 
-    fun updateState(characters: MutableList<Characters>, isLoading: Boolean, name: String, isFirstTime: Boolean) {
+    fun updateState(
+        characters: MutableList<Characters>,
+        isLoading: Boolean,
+        name: String,
+        isFirstTime: Boolean
+    ) {
         if (isFirstTime) {
             listAlCharacters.clear()
         }
