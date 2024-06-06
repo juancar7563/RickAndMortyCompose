@@ -43,12 +43,18 @@ class SearchViewModel @Inject constructor(
         }
     }
 
+    fun showLoading(isLoading: Boolean) {
+        state = state.copy(isLoading = isLoading)
+    }
+
     fun getSearchCharacters(name: String) {
         if (!isValidName(name)) {
             viewModelScope.launch {
                 showSnackbarMethod(UiText.StringResource(R.string.character_error, 3))
+
             }
         } else {
+            showLoading(true)
             viewModelScope.launch {
                 getCharacterSearchUseCase(name).onEach { result ->
                     when (result) {
@@ -69,7 +75,7 @@ class SearchViewModel @Inject constructor(
                         }
 
                         is CharacterResultList.Loading -> {
-                            handleError(false)
+                            showLoading(true)
                         }
                     }
                 }.launchIn(this)
@@ -84,13 +90,19 @@ class SearchViewModel @Inject constructor(
                 showSnackbarMethod(UiText.StringResource(R.string.character_error, 3))
             }
         } else if (maxPage != -1 && currentPage < maxPage) {
+            showLoading(true)
             viewModelScope.launch {
                 getCharactersMoreSearchCase(currentPage, name).onEach { result ->
                     when (result) {
                         is CharacterResultList.Success -> {
                             updatePage(result.character?.info?.pages!!)
                             updateCurrentPage(true)
-                            updateState(result.character.characters.toMutableList(), false, name, false)
+                            updateState(
+                                result.character.characters.toMutableList(),
+                                false,
+                                name,
+                                false
+                            )
                         }
 
                         is CharacterResultList.Error -> {
@@ -99,7 +111,7 @@ class SearchViewModel @Inject constructor(
                         }
 
                         is CharacterResultList.Loading -> {
-                            handleError(false)
+                            showLoading(true)
                         }
                     }
                 }.launchIn(this)

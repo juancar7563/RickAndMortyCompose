@@ -5,10 +5,14 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -24,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
@@ -31,6 +36,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -177,12 +183,17 @@ fun HomeContent(
             userScrollEnabled = !isLoading
         )
 
+
         AnimatedVisibility(visible = (lazyListState.isScrollingUp() && !isFirstElementVisible), enter = fadeIn(), exit = fadeOut()) {
             GoToTop {
                 coroutineScope.launch {
                     lazyListState.scrollToItem(0)
                 }
             }
+        }
+
+        AnimatedVisibility(visible = (lazyListState.isScrollingDown() && !isFirstElementVisible), enter = fadeIn(), exit = fadeOut()) {
+            ShowIndexLetter(viewModel.listAlCharacters.get(lazyListState.firstVisibleItemIndex).name.first().toString())
         }
 
         if (isLoading) {
@@ -280,6 +291,55 @@ fun GoToTop(goToTop: () -> Unit) {
     }
 }
 
+/*@Composable
+fun ShowIndexLetter(letter: String) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        FloatingActionButton(
+            modifier = Modifier
+                .padding(16.dp)
+                .size(40.dp)
+                .align(Alignment.TopEnd)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {},
+            onClick = {},
+            backgroundColor = White, contentColor = Black
+        ) {
+            Text(
+                text = letter.uppercase(),
+                color = Color.Black,
+                style = MaterialTheme.typography.h6
+            )
+        }
+    }
+}*/
+
+@Composable
+fun ShowIndexLetter(letter: String) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .padding(16.dp)
+                .size(40.dp)
+                .align(Alignment.TopEnd)
+                .background(Color.White, shape = CircleShape)
+                .border(1.dp, Color.Black, CircleShape)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {},
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = letter.uppercase(),
+                color = Color.Black,
+                style = MaterialTheme.typography.h6 // Puedes ajustar el estilo según lo necesites
+            )
+        }
+    }
+}
+
 //Sacar esta función a otra clase para tenerlo ordenado y que tenga mas sentido si se quiere usar en otros LazyListState
 @Composable
 fun LazyListState.isScrollingUp(): Boolean {
@@ -291,6 +351,24 @@ fun LazyListState.isScrollingUp(): Boolean {
                 previousIndex > firstVisibleItemIndex
             } else {
                 previousScrollOffset >= firstVisibleItemScrollOffset
+            }.also {
+                previousIndex = firstVisibleItemIndex
+                previousScrollOffset = firstVisibleItemScrollOffset
+            }
+        }
+    }.value
+}
+
+@Composable
+fun LazyListState.isScrollingDown(): Boolean {
+    var previousIndex by remember(this) { mutableStateOf(firstVisibleItemIndex) }
+    var previousScrollOffset by remember(this) { mutableStateOf(firstVisibleItemScrollOffset) }
+    return remember(this) {
+        derivedStateOf {
+            if (previousIndex != firstVisibleItemIndex) {
+                previousIndex < firstVisibleItemIndex
+            } else {
+                previousScrollOffset <= firstVisibleItemScrollOffset
             }.also {
                 previousIndex = firstVisibleItemIndex
                 previousScrollOffset = firstVisibleItemScrollOffset

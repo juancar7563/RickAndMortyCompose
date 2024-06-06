@@ -46,6 +46,12 @@ fun RickAndMortyNavGraph(
                 onItemClicked = { id, name ->
                     navigateToDetail(id, name)
                 },
+                upPress = {
+                    when (it.arguments?.getString("previousScreen")) {
+                        Screen.Search.route -> navigateToSearch()
+                        else -> navigateToHome() // Opcional: Establece una pantalla predeterminada para casos inesperados
+                    }
+                },
                 modifier = modifier,
                 context = context
             )

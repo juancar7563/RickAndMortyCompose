@@ -12,10 +12,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
@@ -31,16 +34,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.rickandmortymvvm.R
 import com.example.rickandmortymvvm.domain.model.Characters
 import com.example.rickandmortymvvm.ui.Screen
+import com.example.rickandmortymvvm.ui.detail.components.mirroringBackIcon
 import com.example.rickandmortymvvm.ui.home.components.CharacterItem
 import com.example.rickandmortymvvm.util.UiText
 import kotlinx.coroutines.launch
@@ -48,6 +55,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun SearchScreen (
     onItemClicked: (Int, String) -> Unit,
+    upPress: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = hiltViewModel(),
     context: Context
@@ -78,6 +86,7 @@ fun SearchScreen (
                 characters = state.characters,
                 getCharacters = { input -> viewModel.getSearchCharacters(input) },
                 onEvent = { viewModel.onEvent(it) },
+                upPress = upPress,
                 onItemClicked = { id, name -> onItemClicked(id, name) },
                 viewModel = viewModel
             )
@@ -85,6 +94,7 @@ fun SearchScreen (
     )
 }
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 private fun SearchContent(
     modifier: Modifier = Modifier,
@@ -94,20 +104,32 @@ private fun SearchContent(
     getCharacters: (String) -> Unit,
     onEvent: (SearchEvent) -> Unit,
     onItemClicked: (Int, String) -> Unit,
+    upPress: () -> Unit,
     viewModel: SearchViewModel
 ) {
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Surface(modifier = modifier.fillMaxSize()) {
         Column(modifier = Modifier.padding(start = 5.dp, end = 5.dp, top = 10.dp)) {
             Row(modifier = Modifier.fillMaxWidth()) {
+                Up(upPress)
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
                     value = input,
                     placeholder = { Text(stringResource(R.string.name)) },
                     onValueChange = { onEvent(SearchEvent.EnteredCharacter(it)) },
                     textStyle = MaterialTheme.typography.h6,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Search,
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onSearch = {
+                            getCharacters(input)
+                            keyboardController?.hide()
+                        }
+                    ),
                     trailingIcon = {
                         IconButton(onClick = { getCharacters(input) }) {
                             Icon(imageVector = Icons.Default.Search, contentDescription = null)
@@ -130,7 +152,9 @@ private fun SearchContent(
                 }
             )
         }
-        if (isLoading) FullScreenLoading()
+        if (isLoading) {
+            FullScreenLoading()
+        }
     }
 
     val isScrollAtEnd = lazyListState.isScrollInProgress &&
@@ -163,5 +187,21 @@ private fun FullScreenLoading() {
     )
     {
         CircularProgressIndicator()
+    }
+}
+
+@Composable
+private fun Up(upPress: () -> Unit) {
+    IconButton(
+        onClick = upPress,
+        modifier = Modifier
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .size(36.dp)
+    ) {
+        Icon(
+            imageVector = mirroringBackIcon(),
+            tint = Color(0xFF4D4D4D),
+            contentDescription = null
+        )
     }
 }

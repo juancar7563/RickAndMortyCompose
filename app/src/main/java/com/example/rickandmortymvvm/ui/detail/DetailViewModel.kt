@@ -44,7 +44,7 @@ class DetailViewModel @Inject constructor(
                             showSnackbarMethod(result.message ?: "Unknown error")
                         }
                         is CharacterResult.Loading -> {
-                            handleError(true)
+                            showLoading(true)
                         }
                     }
                 }.launchIn(this)
@@ -61,6 +61,10 @@ class DetailViewModel @Inject constructor(
 
     fun handleError(isError: Boolean) {
         state = state.copy(isLoading = isError)
+    }
+
+    fun showLoading(isLoading: Boolean) {
+        state = state.copy(isLoading = isLoading)
     }
 
     suspend fun showSnackbarMethod(message: String) {
