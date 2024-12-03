@@ -1,12 +1,19 @@
 - Buscar correciones y hacer un listado
-- Añadir una flecha de back en la busqueda
-- Cambiar el diseño de la app
+- Cambiar el diseño de la app 
+   - https://designtemplateplace.com/product/paws-pet-adoption-app-237796
+   - https://www.pinterest.es/pin/569846159097646448/
+   - 
 - Añadir un boton de reintentar si no cargan los personajes
 - Mejorar el codigo
 - Hacer un control de excepciones para las llamadas
-- Añadir la funcion de busqueda al confirmar el teclado
-- Añadir un feedback de sobre que letra vas en el scroll
 - Añadir un skeleton al diseño
+- Controlar backs para no perder el cotexto anterior de las pantallas(Hecho)
+- Añadir fadein y fade out en las pantallas (Hecho)
+- Añadir un feedback de sobre que letra vas en el scroll (Hecho)
+- Añadir una flecha de back en la busqueda (Hecho)
+- Añadir la funcion de busqueda al confirmar el teclado (Hecho)
+- Añadir una pantalla de carga en las busquedas (Hecho)
+- Añadir la funcion de busqueda al confirmar el teclado (Hecho)
 - Boton para subir arriba en el scroll (Hecho)
 - Arreglar fallo en celdas al cargar la siguiente pagina (Hecho)
 - Añadir un splash para la carga de servicios(Hecho)

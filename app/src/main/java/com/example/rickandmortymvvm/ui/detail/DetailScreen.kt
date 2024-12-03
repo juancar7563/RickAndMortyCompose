@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -80,7 +81,7 @@ private fun Header(
     character: Character?
 ) {
     Column(
-        modifier = modifier.background(Color(0xffffe0b2)),
+        modifier = modifier.background(colorResource(R.color.soft_blue)),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -89,7 +90,7 @@ private fun Header(
         Text(
             text = character?.name ?: "",
             style = MaterialTheme.typography.h5,
-            color = Color.White
+            color = colorResource(R.color.dark_green)
         )
     }
 }
@@ -99,7 +100,7 @@ private fun Body(character: Character?) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(colorResource(R.color.dark_green))
     ) {
         DetailProperty(label = stringResource(R.string.specie), value = character?.species, imageVector = Icons.Filled.EmojiPeople)
         DetailProperty(label = stringResource(R.string.status), value = character?.status, imageVector = Icons.Outlined.Help)
@@ -119,7 +120,7 @@ private fun Up(upPress: () -> Unit) {
     ) {
         Icon(
             imageVector = mirroringBackIcon(),
-            tint = Color(0xffffffff),
+            tint = colorResource(R.color.dark_green),
             contentDescription = null
         )
     }

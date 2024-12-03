@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
+import androidx.compose.foundation.Image
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -32,6 +33,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.White
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -99,28 +101,28 @@ fun HomeTopBar(
 
 
     TopAppBar(
-        backgroundColor = colorResource(id = R.color.green_morty),
+        backgroundColor = colorResource(id = R.color.soft_blue),
         elevation = 0.dp,
         modifier = Modifier.fillMaxWidth()
     ) {
 
         //TopAppBar Content
-        Box(Modifier.height(32.dp)) {
+        Box(Modifier.height(64.dp)) {
 
             //Title
             Row(
-                Modifier.fillMaxSize(),
+                Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = stringResource(id = R.string.home_title),
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.h6,
-                    color = Color.Black,
+                Spacer(modifier = Modifier.weight(1f))
+                Image(
+                    painter = painterResource(id = R.drawable.rickandmortytitle), // Reemplaza con tu recurso de imagen
+                    contentDescription = stringResource(id = R.string.home_title), // Descripción accesible
+                    contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .wrapContentSize(Alignment.Center)
+                        .size(150.dp, 50.dp)
                 )
+                Spacer(modifier = Modifier.weight(1f))
             }
 
             //Navigation Icon
@@ -139,6 +141,7 @@ fun HomeTopBar(
                         Icon(
                             Icons.Filled.Search,
                             contentDescription = "Search",
+                            tint = colorResource(id = R.color.dark_green)
                         )
                     }
                 }
@@ -164,6 +167,7 @@ fun HomeContent(
     ) {
 
         LazyColumn(
+            modifier = Modifier.background(colorResource(id = R.color.dark_green)),
             state = lazyListState,
             contentPadding = PaddingValues(vertical = 6.dp),
             content = {
@@ -184,7 +188,11 @@ fun HomeContent(
         )
 
 
-        AnimatedVisibility(visible = (lazyListState.isScrollingUp() && !isFirstElementVisible), enter = fadeIn(), exit = fadeOut()) {
+        AnimatedVisibility(
+            visible = (lazyListState.isScrollingUp() && !isFirstElementVisible),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             GoToTop {
                 coroutineScope.launch {
                     lazyListState.scrollToItem(0)
@@ -192,8 +200,15 @@ fun HomeContent(
             }
         }
 
-        AnimatedVisibility(visible = (lazyListState.isScrollingDown() && !isFirstElementVisible), enter = fadeIn(), exit = fadeOut()) {
-            ShowIndexLetter(viewModel.listAlCharacters.get(lazyListState.firstVisibleItemIndex).name.first().toString())
+        AnimatedVisibility(
+            visible = (lazyListState.isScrollingDown() && !isFirstElementVisible),
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+            ShowIndexLetter(
+                viewModel.listAlCharacters.get(lazyListState.firstVisibleItemIndex).name.first()
+                    .toString()
+            )
         }
 
         if (isLoading) {

@@ -2,6 +2,7 @@
     <string name="app_name">RickAndMortyMVVM</string>
 
     <!--  HomeScreen  -->
+    <string name="search_title">Rick And Morty</string>
     <string name="home_title">Characters</string>
     <string name="previous_button">Previous</string>
     <string name="next_button">Next</string>

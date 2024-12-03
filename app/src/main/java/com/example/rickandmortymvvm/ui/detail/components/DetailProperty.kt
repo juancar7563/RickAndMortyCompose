@@ -16,8 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.rickandmortymvvm.R
 
 @Composable
 fun DetailProperty(
@@ -31,20 +33,20 @@ fun DetailProperty(
             .fillMaxWidth()
             .padding(vertical = 10.dp, horizontal = 4.dp),
         elevation = 3.dp,
-        backgroundColor = Color(0xffba2d65)
+        backgroundColor = colorResource(R.color.soft_green)
     ) {
         Row(modifier = Modifier.padding(8.dp)) {
             Icon(
                 imageVector = imageVector,
                 contentDescription = null,
-                tint = Color.White,
+                tint = colorResource(R.color.dark_green),
                 modifier = Modifier.align(Alignment.CenterVertically)
             )
             Spacer(Modifier.width(10.dp))
             Column {
-                Text(text = label, fontWeight = FontWeight.Bold, color = Color.White)
+                Text(text = label, fontWeight = FontWeight.Bold, color = colorResource(R.color.dark_green))
                 Spacer(Modifier.height(5.dp))
-                Text(text = value ?: "",  color = Color.White, style = MaterialTheme.typography.caption)
+                Text(text = value ?: "",  color = colorResource(R.color.dark_green), style = MaterialTheme.typography.caption)
             }
         }
     }

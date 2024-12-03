@@ -2,7 +2,6 @@ package com.example.rickandmortymvvm.ui
 
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import com.example.rickandmortymvvm.domain.model.Characters
 
 sealed class Screen(val route: String){
 

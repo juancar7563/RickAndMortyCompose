@@ -11,7 +11,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent{
-            RickAndMortyApp(context = LocalContext.current)
+            RickAndMortyApp(context = LocalContext.current, activity = this@MainActivity)
         }
     }
 }

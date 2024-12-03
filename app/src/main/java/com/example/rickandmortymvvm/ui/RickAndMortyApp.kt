@@ -1,6 +1,7 @@
 package com.example.rickandmortymvvm.ui
 
 import android.content.Context
+import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.navigation.compose.rememberNavController
@@ -8,20 +9,23 @@ import com.example.rickandmortymvvm.ui.theme.RickAndMortyTheme
 
 @Composable
 fun RickAndMortyApp(
-    context: Context
+    context: Context,
+    activity: ComponentActivity
 ) {
     RickAndMortyTheme {
         val navController = rememberNavController()
         val navigationActions = remember(navController) {
             RickAndMortyActions(navController)
         }
+        val onBackPressedDispatcher = activity.onBackPressedDispatcher
 
         RickAndMortyNavGraph(
             navController = navController,
             navigateToHome = navigationActions.navigateToHome,
             navigateToDetail = navigationActions.navigateToDetail,
             navigateToSearch = navigationActions.navigateToSearch,
-            context = context
+            context = context,
+            onBackPressedDispatcher = onBackPressedDispatcher
         )
     }
 }
