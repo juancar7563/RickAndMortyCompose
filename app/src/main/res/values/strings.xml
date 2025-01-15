@@ -16,4 +16,18 @@
     <string name="name">Nombre</string>
     <string name="character_error">The name needs to consist of at least %d characters</string>
     <string name="character_invalid">Some of the characters is invalid for the search</string>
+    <string name="back_button">Back</string>
+    <string name="generic_error">Something went wrong</string>
+    <string name="generic_mail_error">The mail format is not valid</string>
+    <string name="generic_password_error">The password format is not valid</string>
+    <string name="generic_credentials_empty">Email or password can\'t be empty</string>
+
+    <string name="login_password">Password</string>
+    <string name="login_mail">Email</string>
+    <string name="sign_up_create_account">Create account</string>
+    <string name="sign_up_have_account">Already have an account, Login</string>
+    <string name="sign_up_title">Signup Page</string>
+    <string name="login_title">Login Page</string>
+    <string name="login_subtitle">Login</string>
+    <string name="login_no_have_account">Don\'t have an account, Signup</string>
 </resources>

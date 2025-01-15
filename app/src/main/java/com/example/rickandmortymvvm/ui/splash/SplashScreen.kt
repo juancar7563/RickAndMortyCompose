@@ -30,7 +30,7 @@ fun SplashScreen(
     LaunchedEffect(navigateToHome) {
         if (navigateToHome) {
             navController.popBackStack()
-            navController.navigate(Screen.Home.route)
+            navController.navigate(Screen.Login.route)
         }
     }
 

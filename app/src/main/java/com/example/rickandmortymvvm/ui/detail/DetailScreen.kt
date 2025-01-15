@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.SafetyDivider
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -37,13 +38,25 @@ import com.example.rickandmortymvvm.ui.detail.components.DetailProperty
 import com.example.rickandmortymvvm.ui.detail.components.mirroringBackIcon
 import com.example.rickandmortymvvm.ui.detail.components.CharacterImage
 import com.example.rickandmortymvvm.domain.model.Character
+import com.example.rickandmortymvvm.util.commoncomponents.FullScreenLoading
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Composable
 fun DetailScreen(
     viewModel: DetailViewModel = hiltViewModel(),
     upPress: () -> Unit
 ) {
+    val systemUiController = rememberSystemUiController()
+    val colorNotificationBar = colorResource(R.color.soft_blue)
     val state = viewModel.state
+
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = colorNotificationBar,
+            darkIcons = true
+        )
+    }
+
     DetailContent(
         character = state.character,
         upPress = upPress,
@@ -53,22 +66,22 @@ fun DetailScreen(
 
 @Composable
 private fun DetailContent(
-    modifier: Modifier = Modifier,
     character: Character?,
     upPress: () -> Unit,
-    isLoading: Boolean = false
+    isLoading: Boolean = false,
+    modifier: Modifier = Modifier
 ) {
     Box(modifier.fillMaxSize()) {
         Column {
-            Header(
+            DetailHeader(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(240.dp),
                 character = character
             )
-            Body(character = character)
+            DetailBody(character)
         }
-        Up(upPress)
+        BackButton(upPress)
     }
     if (isLoading) {
         FullScreenLoading()
@@ -76,9 +89,9 @@ private fun DetailContent(
 }
 
 @Composable
-private fun Header(
-    modifier: Modifier = Modifier,
-    character: Character?
+private fun DetailHeader(
+    character: Character?,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.background(colorResource(R.color.soft_blue)),
@@ -88,7 +101,7 @@ private fun Header(
         CharacterImage(image = character?.image)
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = character?.name ?: "",
+            text = character?.name.orEmpty(),
             style = MaterialTheme.typography.h5,
             color = colorResource(R.color.dark_green)
         )
@@ -96,52 +109,38 @@ private fun Header(
 }
 
 @Composable
-private fun Body(character: Character?) {
+private fun DetailBody(character: Character?) {
+    val properties = listOf(
+        Triple(stringResource(R.string.specie), character?.species, Icons.Filled.EmojiPeople),
+        Triple(stringResource(R.string.status), character?.status, Icons.Outlined.Help),
+        Triple(stringResource(R.string.gender), character?.gender, Icons.Outlined.SafetyDivider),
+        Triple(stringResource(R.string.first_location), character?.origin?.name, Icons.Outlined.Visibility),
+        Triple(stringResource(R.string.last_location), character?.location?.name, Icons.Outlined.LocationOn)
+    )
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(colorResource(R.color.dark_green))
     ) {
-        DetailProperty(label = stringResource(R.string.specie), value = character?.species, imageVector = Icons.Filled.EmojiPeople)
-        DetailProperty(label = stringResource(R.string.status), value = character?.status, imageVector = Icons.Outlined.Help)
-        DetailProperty(label = stringResource(R.string.gender), value = character?.gender, imageVector = Icons.Outlined.SafetyDivider)
-        DetailProperty(label = stringResource(R.string.first_location), value = character?.origin?.name, imageVector = Icons.Outlined.Visibility)
-        DetailProperty(label = stringResource(R.string.last_location), value = character?.location?.name, imageVector = Icons.Outlined.LocationOn)
+        properties.forEach { (label, value, icon) ->
+            DetailProperty(label = label, value = value, imageVector = icon)
+        }
     }
 }
 
 @Composable
-private fun Up(upPress: () -> Unit) {
+private fun BackButton(onClick: () -> Unit, modifier: Modifier = Modifier) {
     IconButton(
-        onClick = upPress,
-        modifier = Modifier
+        onClick = onClick,
+        modifier = modifier
             .padding(horizontal = 12.dp, vertical = 10.dp)
             .size(36.dp)
     ) {
         Icon(
             imageVector = mirroringBackIcon(),
             tint = colorResource(R.color.dark_green),
-            contentDescription = null
+            contentDescription = stringResource(R.string.back_button)
         )
-    }
-}
-
-@Preview
-@Composable
-private fun FullScreenLoading() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .alpha(0.5f)
-            .background(Color.Black)
-    )
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.Center)
-
-    )
-    {
-        CircularProgressIndicator()
     }
 }

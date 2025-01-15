@@ -7,6 +7,8 @@ sealed class Screen(val route: String){
 
     object Splash: Screen("splash")
     object Home: Screen("home")
+    object Login: Screen("login")
+    object SignUp: Screen("signup")
     object Detail: Screen("detail/{id}?previousScreen={previousScreen}") {
         fun passId(id:Int, screen:String): String {
             return "detail/$id?previousScreen=$screen"
@@ -16,6 +18,26 @@ sealed class Screen(val route: String){
 }
 
 class RickAndMortyActions(navController: NavController) {
+    val navigateToLogin: () -> Unit = {
+        navController.navigate(Screen.Login.route) {
+            popUpTo(navController.graph.findStartDestination().id){
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
+    val navigateToSignUp: () -> Unit = {
+        navController.navigate(Screen.SignUp.route) {
+            popUpTo(navController.graph.findStartDestination().id){
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
+
     val navigateToHome: () -> Unit = {
         navController.navigate(Screen.Home.route) {
             popUpTo(navController.graph.findStartDestination().id){

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "276538181115",
+    "project_id": "rickymortymvvm",
+    "storage_bucket": "rickymortymvvm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:276538181115:android:820962d5e84f70ae69f75e",
+        "android_client_info": {
+          "package_name": "com.example.rickandmortymvvm"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzh_HIZui6stgsmj4oUYHmlLVGgtv8Ud8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

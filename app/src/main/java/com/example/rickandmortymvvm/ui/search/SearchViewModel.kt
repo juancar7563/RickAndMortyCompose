@@ -13,6 +13,8 @@ import com.example.rickandmortymvvm.domain.use_case.GetCharactersMoreSearchCase
 import com.example.rickandmortymvvm.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -25,9 +27,9 @@ class SearchViewModel @Inject constructor(
     private val getCharactersMoreSearchCase: GetCharactersMoreSearchCase
 ) : ViewModel() {
 
-    var state by mutableStateOf(SearchState(isLoading = false))
-        set
 
+    private val originState = MutableStateFlow(SearchState())
+    var state: StateFlow<SearchState> = originState
     var fEventFlow = MutableSharedFlow<UIEvent>()
     val eventFlow = fEventFlow.asSharedFlow()
 
@@ -39,12 +41,12 @@ class SearchViewModel @Inject constructor(
 
     fun onEvent(event: SearchEvent) {
         when (event) {
-            is SearchEvent.EnteredCharacter -> state = state.copy(nameInput = event.value)
+            is SearchEvent.EnteredCharacter -> originState.value = originState.value.copy(nameInput = event.value)
         }
     }
 
     fun showLoading(isLoading: Boolean) {
-        state = state.copy(isLoading = isLoading)
+        originState.value = originState.value.copy(isLoading = isLoading)
     }
 
     fun getSearchCharacters(name: String) {
@@ -130,7 +132,7 @@ class SearchViewModel @Inject constructor(
         }
         listAlCharacters.addAll(characters)
 
-        state = state.copy(
+        originState.value = originState.value.copy(
             characters = listAlCharacters,
             isLoading = isLoading,
             nameInput = name
@@ -138,7 +140,7 @@ class SearchViewModel @Inject constructor(
     }
 
     fun handleError(isError: Boolean) {
-        state = state.copy(isLoading = isError)
+        originState.value = originState.value.copy(isLoading = isError)
     }
 
     fun isValidName(name: String): Boolean {

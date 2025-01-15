@@ -21,9 +21,9 @@ fun RickAndMortyApp(
 
         RickAndMortyNavGraph(
             navController = navController,
-            navigateToHome = navigationActions.navigateToHome,
             navigateToDetail = navigationActions.navigateToDetail,
             navigateToSearch = navigationActions.navigateToSearch,
+            navigateToLogin = navigationActions.navigateToLogin,
             context = context,
             onBackPressedDispatcher = onBackPressedDispatcher
         )

@@ -1,12 +1,24 @@
+- Meter un sitema de login
+	- Meter en la pantalla home un signout
+	- En contraseña dejarla oculta y poner un boton para que se vea 
+	- Al volver si ya te habias logado dejar el mail puesto en la casilla (Hecho)
+	- Deshbilitar o finalizar las pantallas de login tras iniciarse, lo mismo al signout del home
+	- Hacer un control de mail y contraseña permitidas con control de errores de sintax especificos
+	- Borrar datos al cambiar de usuario
+	- Cambiar diseño
+	- Mejorar código y limpiarlo
+	- Cambiar la disposición del SignUp
+
+- Hacer un toast de errores 
 - Buscar correciones y hacer un listado
-- Cambiar el diseño de la app 
+- Cambiar el diseño de la app (Hecho pero habra que hacerle un V2 intenso)
    - https://designtemplateplace.com/product/paws-pet-adoption-app-237796
    - https://www.pinterest.es/pin/569846159097646448/
    - 
 - Añadir un boton de reintentar si no cargan los personajes
-- Mejorar el codigo
+- Mejorar el codigo (Hecho)
 - Hacer un control de excepciones para las llamadas
-- Añadir un skeleton al diseño
+- Añadir un skeleton al diseño 
 - Controlar backs para no perder el cotexto anterior de las pantallas(Hecho)
 - Añadir fadein y fade out en las pantallas (Hecho)
 - Añadir un feedback de sobre que letra vas en el scroll (Hecho)

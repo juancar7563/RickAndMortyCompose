@@ -60,7 +60,6 @@ class SplashViewModel @Inject constructor(
                     }
                 }
             }.launchIn(this)
-
         }
     }
 
@@ -70,7 +69,7 @@ class SplashViewModel @Inject constructor(
         }
 
         state = state.copy(
-            characters = listAlCharacters,
+             characters = listAlCharacters,
             isLoading = isLoading
         )
     }

@@ -3,6 +3,7 @@ package com.example.rickandmortymvvm.ui.home
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.MutableLiveData
 import com.example.rickandmortymvvm.domain.use_case.GetCharactersUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -12,6 +13,8 @@ import com.example.rickandmortymvvm.data.Result
 import com.example.rickandmortymvvm.data.repositories.CommonRepository
 import com.example.rickandmortymvvm.domain.model.Characters
 import com.example.rickandmortymvvm.domain.use_case.CharacterResultList
+import com.example.rickandmortymvvm.ui.login.LoginState
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -25,6 +28,8 @@ class HomeViewModel @Inject constructor(
     private val commonRepository: CommonRepository
 ) : ViewModel() {
 
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val mutableAuthState = MutableLiveData<LoginState>()
     var state by mutableStateOf(HomeState(isLoading = true))
         set
 
@@ -111,6 +116,11 @@ class HomeViewModel @Inject constructor(
 
     fun updateCurrentPage(showNext: Boolean) {
         if (showNext) currentPage++ else if (currentPage > 1) currentPage--
+    }
+
+    fun signout() {
+        auth.signOut()
+        mutableAuthState.value = LoginState.Unauthenticated
     }
 
     sealed class UIEvent {

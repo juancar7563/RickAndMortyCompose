@@ -1,6 +1,9 @@
 package com.example.rickandmortymvvm.ui.home
 
 
+import CenteredAppBar
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,54 +13,57 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
-import androidx.compose.foundation.Image
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.White
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.toUpperCase
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import com.example.rickandmortymvvm.R
 import com.example.rickandmortymvvm.domain.model.Characters
 import com.example.rickandmortymvvm.ui.Screen
 import com.example.rickandmortymvvm.ui.home.components.CharacterItem
+import com.example.rickandmortymvvm.util.commoncomponents.FloatingButton
+import com.example.rickandmortymvvm.util.commoncomponents.FullScreenLoading
+import com.example.rickandmortymvvm.util.commoncomponents.isScrollingDown
+import com.example.rickandmortymvvm.util.commoncomponents.isScrollingUp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
+    navController: NavHostController,
     onItemClicked: (Int, String) -> Unit,
     onSearchClicked: () -> Unit,
+    onLogoutPressed: () -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
+    val systemUiController = rememberSystemUiController()
+    val colorNotificationBar = colorResource(R.color.soft_blue)
     val state = viewModel.state
+    val context = LocalContext.current
     val eventFlow = viewModel.eventFlow
     val scaffoldState = rememberScaffoldState()
+
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = colorNotificationBar,
+            darkIcons = true
+        )
+    }
 
     LaunchedEffect(key1 = true) {
         eventFlow.collectLatest { event ->
@@ -71,11 +77,21 @@ fun HomeScreen(
         }
     }
 
+    BackHandler {
+        (context as? Activity)?.finishAndRemoveTask()
+    }
+
     Scaffold(
         scaffoldState = scaffoldState,
         topBar = {
-            HomeTopBar(
-                onSearchPressed = { onSearchClicked() }
+            CenteredAppBar(
+                titleImageRes = R.drawable.rickandmortytitle,
+                onSearchPressed = { onSearchClicked() },
+                onLogoutPressed = {
+                    viewModel.signout()
+                    navController.popBackStack()
+                    onLogoutPressed()
+                }
             )
         }
     ) { innerPadding ->
@@ -86,67 +102,6 @@ fun HomeScreen(
             charaters = state.characters,
             viewModel = viewModel
         )
-    }
-}
-
-@Composable
-fun HomeTopBar(
-    onSearchPressed: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val appBarHorizontalPadding = 4.dp
-    val titleIconModifier = Modifier
-        .fillMaxHeight()
-        .width(48.dp - appBarHorizontalPadding)
-
-
-    TopAppBar(
-        backgroundColor = colorResource(id = R.color.soft_blue),
-        elevation = 0.dp,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-
-        //TopAppBar Content
-        Box(Modifier.height(64.dp)) {
-
-            //Title
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(modifier = Modifier.weight(1f))
-                Image(
-                    painter = painterResource(id = R.drawable.rickandmortytitle), // Reemplaza con tu recurso de imagen
-                    contentDescription = stringResource(id = R.string.home_title), // Descripción accesible
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(150.dp, 50.dp)
-                )
-                Spacer(modifier = Modifier.weight(1f))
-            }
-
-            //Navigation Icon
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Spacer(modifier = Modifier.weight(1f))
-                CompositionLocalProvider(
-                    LocalContentAlpha provides ContentAlpha.high,
-                ) {
-                    IconButton(
-                        onClick = onSearchPressed,
-                        enabled = true,
-                        modifier = titleIconModifier
-                    ) {
-                        Icon(
-                            Icons.Filled.Search,
-                            contentDescription = "Search",
-                            tint = colorResource(id = R.color.dark_green)
-                        )
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -188,10 +143,8 @@ fun HomeContent(
         )
 
 
-        AnimatedVisibility(
-            visible = (lazyListState.isScrollingUp() && !isFirstElementVisible),
-            enter = fadeIn(),
-            exit = fadeOut()
+        ScrollVisibility(
+            visible = lazyListState.isScrollingUp() && !isFirstElementVisible
         ) {
             GoToTop {
                 coroutineScope.launch {
@@ -200,10 +153,8 @@ fun HomeContent(
             }
         }
 
-        AnimatedVisibility(
-            visible = (lazyListState.isScrollingDown() && !isFirstElementVisible),
-            enter = fadeIn(),
-            exit = fadeOut()
+        ScrollVisibility(
+            visible = lazyListState.isScrollingDown() && !isFirstElementVisible
         ) {
             ShowIndexLetter(
                 viewModel.listAlCharacters.get(lazyListState.firstVisibleItemIndex).name.first()
@@ -228,107 +179,19 @@ fun HomeContent(
 }
 
 @Composable
-private fun HomeBottomBar(
-    showPrevious: Boolean,
-    showNext: Boolean,
-    onPreviousPressed: () -> Unit,
-    onNextPressed: () -> Unit
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.Transparent)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 2.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            TextButton(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                enabled = showPrevious,
-                onClick = onPreviousPressed
-            ) {
-                Text(text = stringResource(id = R.string.previous_button))
-            }
-            TextButton(
-                modifier = Modifier
-                    .weight(1f)
-                    .height(48.dp),
-                enabled = showNext,
-                onClick = onNextPressed
-            ) {
-                Text(text = stringResource(id = R.string.next_button))
-            }
-        }
-    }
-}
-
-@Preview
-@Composable
-private fun FullScreenLoading() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .alpha(0.5f)
-            .background(Color.Black)
-    )
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.Center)
-
-    )
-    {
-        CircularProgressIndicator()
-    }
-}
-
-@Composable
 fun GoToTop(goToTop: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
-        FloatingActionButton(
+        FloatingButton(
+            onClick = goToTop,
             modifier = Modifier
                 .padding(16.dp)
                 .size(40.dp)
-                .align(Alignment.TopCenter),
-            onClick = goToTop,
-            backgroundColor = White, contentColor = Black
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_arrow_black_up_foreground),
-                contentDescription = "go to top"
-            )
-        }
+                .align(Alignment.TopCenter), // Alineación dentro del Box
+            iconPainter = painterResource(id = R.drawable.ic_arrow_black_up_foreground),
+            contentDescription = "go to top"
+        )
     }
 }
-
-/*@Composable
-fun ShowIndexLetter(letter: String) {
-    Box(modifier = Modifier.fillMaxSize()) {
-        FloatingActionButton(
-            modifier = Modifier
-                .padding(16.dp)
-                .size(40.dp)
-                .align(Alignment.TopEnd)
-                .clickable(
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = null
-                ) {},
-            onClick = {},
-            backgroundColor = White, contentColor = Black
-        ) {
-            Text(
-                text = letter.uppercase(),
-                color = Color.Black,
-                style = MaterialTheme.typography.h6
-            )
-        }
-    }
-}*/
 
 @Composable
 fun ShowIndexLetter(letter: String) {
@@ -355,39 +218,16 @@ fun ShowIndexLetter(letter: String) {
     }
 }
 
-//Sacar esta función a otra clase para tenerlo ordenado y que tenga mas sentido si se quiere usar en otros LazyListState
 @Composable
-fun LazyListState.isScrollingUp(): Boolean {
-    var previousIndex by remember(this) { mutableStateOf(firstVisibleItemIndex) }
-    var previousScrollOffset by remember(this) { mutableStateOf(firstVisibleItemScrollOffset) }
-    return remember(this) {
-        derivedStateOf {
-            if (previousIndex != firstVisibleItemIndex) {
-                previousIndex > firstVisibleItemIndex
-            } else {
-                previousScrollOffset >= firstVisibleItemScrollOffset
-            }.also {
-                previousIndex = firstVisibleItemIndex
-                previousScrollOffset = firstVisibleItemScrollOffset
-            }
-        }
-    }.value
-}
-
-@Composable
-fun LazyListState.isScrollingDown(): Boolean {
-    var previousIndex by remember(this) { mutableStateOf(firstVisibleItemIndex) }
-    var previousScrollOffset by remember(this) { mutableStateOf(firstVisibleItemScrollOffset) }
-    return remember(this) {
-        derivedStateOf {
-            if (previousIndex != firstVisibleItemIndex) {
-                previousIndex < firstVisibleItemIndex
-            } else {
-                previousScrollOffset <= firstVisibleItemScrollOffset
-            }.also {
-                previousIndex = firstVisibleItemIndex
-                previousScrollOffset = firstVisibleItemScrollOffset
-            }
-        }
-    }.value
+fun ScrollVisibility(
+    visible: Boolean,
+    onVisible: @Composable () -> Unit
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(),
+        exit = fadeOut()
+    ) {
+        onVisible()
+    }
 }

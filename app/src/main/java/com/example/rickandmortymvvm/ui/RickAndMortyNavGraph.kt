@@ -17,6 +17,8 @@ import androidx.navigation.navArgument
 import com.example.rickandmortymvvm.domain.model.Characters
 import com.example.rickandmortymvvm.ui.detail.DetailScreen
 import com.example.rickandmortymvvm.ui.home.HomeScreen
+import com.example.rickandmortymvvm.ui.login.LoginScreen
+import com.example.rickandmortymvvm.ui.login.SignUpScreen
 import com.example.rickandmortymvvm.ui.search.SearchScreen
 import com.example.rickandmortymvvm.ui.splash.SplashScreen
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -25,9 +27,9 @@ import com.google.accompanist.navigation.animation.AnimatedNavHost
 @Composable
 fun RickAndMortyNavGraph(
     modifier: Modifier = Modifier,
-    navigateToHome: () -> Unit,
     navigateToSearch: () -> Unit,
     navigateToDetail: (Int, String) -> Unit,
+    navigateToLogin: () -> Unit,
     context: Context,
     onBackPressedDispatcher: OnBackPressedDispatcher,
     navController: NavHostController = rememberNavController(),
@@ -43,14 +45,26 @@ fun RickAndMortyNavGraph(
                 exitTransition = { slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(400)) }) {
             SplashScreen(navController)
         }
+        composable(route = Screen.Login.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(400)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(400)) }) {
+            LoginScreen(navController)
+        }
+        composable(route = Screen.SignUp.route,
+            enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(400)) },
+            exitTransition = { slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(400)) }) {
+            SignUpScreen(navController)
+        }
         composable(route = Screen.Home.route,
             enterTransition = { slideInHorizontally(initialOffsetX = { 1000 }, animationSpec = tween(400)) },
             exitTransition = { slideOutHorizontally(targetOffsetX = { 1000 }, animationSpec = tween(400)) }) {
             HomeScreen(
+                navController,
                 onItemClicked = { id, name ->
                     navigateToDetail(id, name)
                 },
-                onSearchClicked = navigateToSearch
+                onSearchClicked = navigateToSearch,
+                onLogoutPressed = navigateToLogin
             )
         }
         composable(route = Screen.Search.route,
